@@ -182,7 +182,7 @@ function renderCalendar(){
         ${isCurrentMonth?'<span class="cal-cur-badge">本月</span>':''}
       </div>
       <div style="display:flex;gap:6px;align-items:center">
-        ${(!isCurrentMonth&&isCurrentYear)?'<button class="cal-today-btn" id="calToday">回到今天</button>':''}
+        ${!isCurrentMonth?'<button class="cal-today-btn" id="calToday">回到今天</button>':''}
         <button class="cal-nav-btn" id="calNext" ${canNext?'':'disabled'}>›</button>
       </div>
     </div>`;
@@ -242,7 +242,14 @@ function renderCalendar(){
   document.getElementById('calPrev')?.addEventListener('click',()=>navCal('prev'));
   document.getElementById('calNext')?.addEventListener('click',()=>navCal('next'));
   document.getElementById('calToday')?.addEventListener('click',()=>{
-    if(year===_now.getFullYear()){ calDir=null; calMonth=_now.getMonth(); selectedDate=todayStr(); render(); }
+    const ty=_now.getFullYear(), tm=_now.getMonth();
+    // 跨年时给一个方向感的滑入动画
+    calDir = (year>ty || (year===ty && calMonth>tm)) ? 'prev'
+           : (year<ty || (year===ty && calMonth<tm)) ? 'next' : null;
+    if(year!==ty){ year=ty; setYearTab(); }
+    calMonth=tm;
+    selectedDate=todayStr();
+    render();
   });
 
   // bind day clicks
