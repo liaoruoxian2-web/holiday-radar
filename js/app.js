@@ -93,33 +93,33 @@ document.querySelectorAll('.view-btn').forEach(b=>b.addEventListener('click',()=
 }));
 
 // ── wheel scroll on calendar ──────────────────────────────────────────
-// 累积阈值：deltaY 累积超过阈值才翻页，防止触控板/惯性滚轮误触
-let wheelAccum=0, wheelTimer=null;
-const WHEEL_THRESHOLD=60;
-const WHEEL_LOCK_MS=380;
+// 滚轮"会话/吸附"模型：一次连续滑动只翻一个月，无论你滚多快/多远。
+// 必须停止滚动 SESSION_END_MS 才能开启下一次翻页（类似吸附 / scroll-snap）。
+let wheelInSession = false;   // 是否在一次连续滚动会话中（已经触发过翻页）
+let wheelEndTimer = null;     // 检测"用户停止滚动"的定时器
+const SESSION_END_MS = 320;   // 静止多少 ms 后视为本次会话结束
+const MIN_DELTA = 4;          // 忽略极小的抖动
+const WHEEL_LOCK_MS = 380;    // 动画锁：翻页后这段时间内禁止再翻
 
 document.getElementById('calView').addEventListener('wheel',e=>{
   e.preventDefault();
-  if(wheelLock) return;
 
-  wheelAccum += e.deltaY;
+  // 重置"停止滚动"判定
+  if(wheelEndTimer) clearTimeout(wheelEndTimer);
+  wheelEndTimer = setTimeout(()=>{ wheelInSession=false; pendingDir=null; }, SESSION_END_MS);
 
-  // clear idle timer
-  if(wheelTimer) clearTimeout(wheelTimer);
-  wheelTimer = setTimeout(()=>{ wheelAccum=0; },200);
+  // 已在会话内（或在动画锁中）→ 不触发新翻页，吃掉滚动
+  if(wheelInSession || wheelLock) return;
 
-  // trigger only when accumulated delta crosses threshold
-  if(wheelAccum > WHEEL_THRESHOLD){
-    wheelAccum = 0;
-    wheelLock = true;
-    setTimeout(()=>wheelLock=false, WHEEL_LOCK_MS);
-    navCal('next');
-  }else if(wheelAccum < -WHEEL_THRESHOLD){
-    wheelAccum = 0;
-    wheelLock = true;
-    setTimeout(()=>wheelLock=false, WHEEL_LOCK_MS);
-    navCal('prev');
-  }
+  if(Math.abs(e.deltaY) < MIN_DELTA) return;
+
+  // 触发本次会话内的"唯一一次"翻页
+  wheelInSession = true;
+  wheelLock = true;
+  setTimeout(()=>{ wheelLock=false; }, WHEEL_LOCK_MS);
+
+  if(e.deltaY > 0) navCal('next');
+  else navCal('prev');
 },{passive:false});
 
 // ── keyboard arrows ───────────────────────────────────────────────────
