@@ -37,9 +37,21 @@ const active = new Set(['cn','tw','kr','vn','jp']);
 function currentHols(){ return getHolidays(year,[...active]); }
 
 // ── month navigation (with animation direction) ────────────────────────
+// 支持跨年：2026-12 → 下一月 = 2027-01；2027-01 → 上一月 = 2026-12
+const YEAR_MIN = 2026, YEAR_MAX = 2027;
+function setYearTab(){
+  document.querySelectorAll('.year-btn').forEach(b=>b.classList.toggle('active',+b.dataset.y===year));
+}
 function navCal(dir){
-  if(dir==='next' && calMonth<11){ calDir='next'; calMonth++; selectedDate=null; render(); }
-  else if(dir==='prev' && calMonth>0){ calDir='prev'; calMonth--; selectedDate=null; render(); }
+  if(dir==='next'){
+    if(calMonth<11){ calDir='next'; calMonth++; selectedDate=null; render(); }
+    else if(year<YEAR_MAX){ calDir='next'; year++; calMonth=0; selectedDate=null; setYearTab(); render(); }
+    // 已是 2027-12，到达边界，不动
+  }else if(dir==='prev'){
+    if(calMonth>0){ calDir='prev'; calMonth--; selectedDate=null; render(); }
+    else if(year>YEAR_MIN){ calDir='prev'; year--; calMonth=11; selectedDate=null; setYearTab(); render(); }
+    // 已是 2026-01，到达边界，不动
+  }
 }
 
 // ── jump to a specific year+month+date (from sidebar click) ────────────
@@ -155,7 +167,9 @@ function renderCalendar(){
   const startWd=new Date(year,calMonth,1).getDay();
   const isCurrentYear=(year===_now.getFullYear());
   const isCurrentMonth=(isCurrentYear && calMonth===_now.getMonth());
-  const canPrev=calMonth>0, canNext=calMonth<11;
+  // 跨年导航：仅在边界（2026-01 / 2027-12）禁用
+  const canPrev = !(year===YEAR_MIN && calMonth===0);
+  const canNext = !(year===YEAR_MAX && calMonth===11);
 
   // nav
   const navHtml=`
