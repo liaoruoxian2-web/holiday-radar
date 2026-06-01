@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Holiday Radar — 海外重点地区法定节假日</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">📅</div>
+    <span class="logo-text">Holiday Radar</span>
+  </div>
+  <div class="divider"></div>
+
+  <!-- Year -->
+  <div class="seg">
+    <button class="seg-btn year-btn active" data-y="2026">2026</button>
+    <button class="seg-btn year-btn" data-y="2027">2027</button>
+  </div>
+
+  <!-- Regions -->
+  <div class="region-wrap" id="regionWrap">
+    <span class="chip" data-r="cn">🇨🇳 中国大陆</span>
+    <span class="chip" data-r="tw"><span class="tw-flag">台</span> 台湾</span>
+    <span class="chip" data-r="kr">🇰🇷 韩国</span>
+    <span class="chip" data-r="vn">🇻🇳 越南</span>
+    <span class="chip" data-r="jp">🇯🇵 日本</span>
+  </div>
+
+  <!-- View — no list view -->
+  <div class="seg">
+    <button class="seg-btn view-btn active" data-v="calendar">📅 日历</button>
+    <button class="seg-btn view-btn" data-v="timeline">📊 时间线</button>
+  </div>
+</header>
+
+<!-- ── Main layout ── -->
+<div class="layout">
+  <div class="main">
+
+    <!-- Calendar View -->
+    <div class="view active" id="view-calendar">
+      <div class="cal-view" id="calView"></div>
+    </div>
+
+    <!-- Timeline View -->
+    <div class="view" id="view-timeline">
+      <div id="tlView" style="flex:1;overflow-y:auto"></div>
+    </div>
+
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sb-head" id="sbHead">
+      <span class="sb-title">近期节假日</span>
+      <span class="sb-sub">未来 90 天</span>
+    </div>
+    <div class="sb-body" id="sbBody"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="mContent"></div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
