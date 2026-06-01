@@ -93,14 +93,33 @@ document.querySelectorAll('.view-btn').forEach(b=>b.addEventListener('click',()=
 }));
 
 // ── wheel scroll on calendar ──────────────────────────────────────────
-// bind once after DOM ready (calView persists across renders)
+// 累积阈值：deltaY 累积超过阈值才翻页，防止触控板/惯性滚轮误触
+let wheelAccum=0, wheelTimer=null;
+const WHEEL_THRESHOLD=60;
+const WHEEL_LOCK_MS=380;
+
 document.getElementById('calView').addEventListener('wheel',e=>{
   e.preventDefault();
   if(wheelLock) return;
-  wheelLock=true;
-  setTimeout(()=>{ wheelLock=false; },380); // lock until animation finishes
-  if(e.deltaY>0) navCal('next');
-  else if(e.deltaY<0) navCal('prev');
+
+  wheelAccum += e.deltaY;
+
+  // clear idle timer
+  if(wheelTimer) clearTimeout(wheelTimer);
+  wheelTimer = setTimeout(()=>{ wheelAccum=0; },200);
+
+  // trigger only when accumulated delta crosses threshold
+  if(wheelAccum > WHEEL_THRESHOLD){
+    wheelAccum = 0;
+    wheelLock = true;
+    setTimeout(()=>wheelLock=false, WHEEL_LOCK_MS);
+    navCal('next');
+  }else if(wheelAccum < -WHEEL_THRESHOLD){
+    wheelAccum = 0;
+    wheelLock = true;
+    setTimeout(()=>wheelLock=false, WHEEL_LOCK_MS);
+    navCal('prev');
+  }
 },{passive:false});
 
 // ── keyboard arrows ───────────────────────────────────────────────────
